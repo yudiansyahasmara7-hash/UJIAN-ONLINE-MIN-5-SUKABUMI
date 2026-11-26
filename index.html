@@ -97,6 +97,9 @@ textarea:focus{border-color:var(--accent)}
       <label for="tingkat">Kelas</label>
       <select id="tingkat" required>
         <option value="">Pilih kelas</option>
+        <option value="1">Kelas 1</option>
+        <option value="2">Kelas 2</option>
+        <option value="3">Kelas 3</option>
         <option value="4">Kelas 4</option>
         <option value="5">Kelas 5</option>
         <option value="6">Kelas 6</option>
@@ -193,7 +196,7 @@ textarea:focus{border-color:var(--accent)}
 <script>
 /* ============ PENGATURAN ============ */
 // Tempel URL Web App dari Apps Script (berakhiran /exec)
-const API_URL = 'https://script.google.com/macros/s/AKfycbwhF5YU5hhIf9J7EOPpohuv0b-MeugiNT1v4HkoPr-kP_jdjOSfkbpLp1rfnYOipjUa/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbwi1H_Kfntvh2vLX_8tBaHov_UA6sHBm1g-D6fJvXQVHuacnMs7AVR8A-tqHxRjBNNd/exec';
 
 /* ============ UTIL ============ */
 const KEY = 'ujian_sesi_v1';
@@ -277,7 +280,13 @@ function renderMapel() {
   const sel = $('#mapel'), tk = $('#tingkat').value, keep = sel.value;
   const list = UJIAN.filter(m => !tk || m.kelas.indexOf(tk) >= 0);
   let html = '<option value="">' + (UJIAN.length ? (list.length ? 'Pilih mata pelajaran' : 'Belum ada ujian untuk kelas ini') : 'Belum ada ujian yang dibuka') + '</option>';
-  list.forEach(m => { html += '<option value="' + m.nama.replace(/"/g, '&quot;') + '">' + m.nama.replace(/</g, '&lt;') + '</option>'; });
+  const esc = t => String(t).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  const groups = []; list.forEach(m => { const g = m.kelompok || 'Umum'; if (groups.indexOf(g) < 0) groups.push(g); });
+  groups.forEach(g => {
+    html += '<optgroup label="' + esc(g) + '">';
+    list.filter(m => (m.kelompok || 'Umum') === g).forEach(m => { html += '<option value="' + esc(m.nama) + '">' + esc(m.nama) + '</option>'; });
+    html += '</optgroup>';
+  });
   sel.innerHTML = html; sel.disabled = !list.length;
   if (keep && list.some(m => m.nama === keep)) sel.value = keep;
   showMapelInfo();
