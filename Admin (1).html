@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Ujian</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8EEF0; --panel:#fff; --ink:#14232B; --muted:#58696F; --line:#C7D3D8; --soft:#F3F7F8;
+  --accent:#0B6E6E; --accent-d:#085757; --sel:#DCF0EE; --warn:#B42318; --warn-bg:#FDECEA;
+  --ok:#1D7A46; --ok-bg:#E3F3EA; --amber:#7A5200; --amber-bg:#FFF3C4;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Atkinson Hyperlegible',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:16px;line-height:1.45}
+[hidden]{display:none!important}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid #F2B705;outline-offset:2px}
+h1{font-size:1.4rem;margin:0 0 6px}
+h2{font-size:1.15rem;margin:0}
+h3{font-size:1rem;margin:0 0 8px}
+.muted{color:var(--muted);font-size:.92rem}
+
+/* kontrol */
+.btn{display:inline-block;border:0;border-radius:8px;padding:9px 15px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff;white-space:nowrap}
+.btn:hover{background:var(--accent-d)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line)}
+.btn.ghost:hover{background:var(--soft)}
+.btn.danger{background:var(--warn)}
+.btn.danger:hover{background:#8F1B12}
+.btn.sm{padding:5px 10px;font-size:.88rem}
+label{display:block;font-weight:700;margin:14px 0 4px}
+input[type=text],input[type=password],input[type=number],select,textarea{width:100%;padding:9px 11px;border:1.5px solid var(--line);border-radius:8px;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:90px;resize:vertical;line-height:1.45}
+.hint{font-weight:400;color:var(--muted);font-size:.88rem}
+.msg{margin-top:12px;padding:9px 12px;border-radius:8px;font-weight:700}
+.msg.err{background:var(--warn-bg);color:var(--warn)}
+.msg.warn{background:var(--amber-bg);color:var(--amber)}
+
+/* login */
+#login{max-width:400px;margin:12vh auto 0;padding:0 18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:24px}
+
+/* kerangka */
+.top{background:var(--ink);color:#fff;display:flex;align-items:center;gap:18px;padding:0 20px;position:sticky;top:0;z-index:20;flex-wrap:wrap}
+.top .brand{font-weight:700;padding:13px 0}
+.tabs{display:flex;gap:2px;flex:1;flex-wrap:wrap}
+.tab{background:none;border:0;color:#B9C8CE;padding:14px 16px;cursor:pointer;font-weight:700;border-bottom:4px solid transparent}
+.tab:hover{color:#fff}
+.tab[aria-selected=true]{color:#fff;border-bottom-color:#4FD1C5}
+.top .out{background:none;border:1.5px solid #5B7079;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-weight:700}
+.page{max-width:1240px;margin:0 auto;padding:18px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.bar select,.bar input[type=text]{width:auto;min-width:130px}
+.bar .grow{flex:1;min-width:160px}
+.bar .sp{flex:1}
+.bar label.chk{display:flex;align-items:center;gap:6px;margin:0;font-weight:400}
+
+/* ringkasan hasil */
+.stats{display:flex;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;margin-bottom:12px}
+.stat{padding:10px 18px;border-right:1px solid var(--line);min-width:120px}
+.stat:last-child{border-right:0}
+.stat b{display:block;font-size:1.5rem;line-height:1.15;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.88rem}
+
+/* tabel */
+.tw{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:auto;max-height:calc(100vh - 290px)}
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid #E3EAED;vertical-align:top}
+th{position:sticky;top:0;background:var(--soft);z-index:2;white-space:nowrap;font-weight:700;border-bottom:1.5px solid var(--line)}
+th.s{cursor:pointer}
+th.s:hover{background:#E6EEF0}
+tbody tr:hover{background:#F8FBFB}
+tr.click{cursor:pointer}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+td.q{max-width:420px}
+td.ck,th.ck{width:36px;padding-right:0}
+.empty{padding:34px 18px;text-align:center;color:var(--muted)}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.84rem;font-weight:700;white-space:nowrap}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-run{background:var(--sel);color:var(--accent-d)}
+.b-stop{background:var(--warn-bg);color:var(--warn)}
+.b-off{background:#E6EAEC;color:var(--muted)}
+.b-wait{background:var(--amber-bg);color:var(--amber)}
+.acts{display:flex;gap:6px;white-space:nowrap}
+
+/* modal */
+.ov{position:fixed;inset:0;z-index:50;background:rgba(20,35,43,.7);display:grid;place-items:start center;padding:4vh 14px;overflow:auto}
+.box{background:#fff;border-radius:12px;width:100%;max-width:640px;padding:22px}
+.box.wide{max-width:760px}
+.box .hd{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px}
+.x{background:none;border:0;font-size:1.6rem;line-height:1;cursor:pointer;color:var(--muted)}
+.row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.row.end{justify-content:flex-end}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.chips{display:flex;gap:14px;flex-wrap:wrap}
+.chips label{display:flex;align-items:center;gap:6px;margin:0;font-weight:400}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:4px 12px;font-size:.95rem;margin:10px 0}
+.kv dt{color:var(--muted)}.kv dd{margin:0}
+pre.log{background:var(--soft);border-radius:8px;padding:10px 12px;white-space:pre-wrap;font:inherit;font-size:.92rem;margin:0}
+.ans{border:1px solid var(--line);border-radius:8px;padding:12px;margin:10px 0}
+.ans .qt{font-weight:700;white-space:pre-wrap}
+.ans .at{white-space:pre-wrap;background:var(--soft);border-radius:6px;padding:8px 10px;margin-top:8px}
+.ans .rub{margin-top:8px;font-size:.9rem;color:var(--amber);background:var(--amber-bg);border-radius:6px;padding:6px 10px;white-space:pre-wrap}
+.nilaiRow{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:12px}
+.nilaiRow input{width:120px}
+.prev{max-width:220px;max-height:150px;border:1px solid var(--line);border-radius:8px;margin-top:8px;display:block}
+
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 18px;border-radius:8px;z-index:90;font-weight:700;max-width:90vw}
+#toast.bad{background:var(--warn)}
+.sec{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px;max-width:640px}
+@media(max-width:720px){.two{grid-template-columns:1fr}.kv{grid-template-columns:1fr}.tw{max-height:none}.page{padding:12px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="login" hidden>
+  <div class="card">
+    <h1>Admin Ujian</h1>
+    <p class="muted">Masukkan password admin. Password ada di sheet Pengaturan (PasswordAdmin).</p>
+    <form id="fLogin">
+      <label for="pw">Password</label>
+      <input id="pw" type="password" autocomplete="current-password" required>
+      <div id="loginErr" class="msg err" hidden></div>
+      <button id="btnLogin" class="btn" style="width:100%;margin-top:18px" type="submit">Masuk</button>
+    </form>
+  </div>
+</section>
+
+<!-- APLIKASI -->
+<section id="app" hidden>
+  <header class="top">
+    <div class="brand">Admin Ujian</div>
+    <nav class="tabs" role="tablist">
+      <button class="tab" role="tab" data-tab="hasil">Hasil</button>
+      <button class="tab" role="tab" data-tab="soal">Soal</button>
+      <button class="tab" role="tab" data-tab="mapel">Mapel</button>
+      <button class="tab" role="tab" data-tab="cfg">Pengaturan</button>
+    </nav>
+    <button class="out" id="btnOut">Keluar</button>
+  </header>
+
+  <!-- HASIL -->
+  <main class="page" id="p-hasil" hidden>
+    <div id="pwWarn" class="msg warn" hidden>Password admin masih "admin123". Ganti di tab Pengaturan.</div>
+    <div class="stats" id="stats"></div>
+    <div class="bar">
+      <select id="hMapel" aria-label="Filter mapel"></select>
+      <select id="hKelas" aria-label="Filter kelas"></select>
+      <select id="hStatus" aria-label="Filter status">
+        <option value="">Semua status</option>
+        <option value="Berlangsung">Berlangsung</option>
+        <option value="Selesai">Selesai</option>
+        <option value="Dihentikan">Dihentikan</option>
+        <option value="Direset">Direset</option>
+        <option value="__wait">Menunggu nilai uraian</option>
+      </select>
+      <input id="hCari" class="grow" type="text" placeholder="Cari nama atau NIS" aria-label="Cari">
+      <label class="chk"><input type="checkbox" id="hAuto"> Segarkan otomatis</label>
+    </div>
+    <div class="bar">
+      <button class="btn ghost" id="hMuat">Muat ulang</button>
+      <button class="btn ghost" id="hCsv">Ekspor CSV</button>
+      <span class="sp"></span>
+      <span class="muted" id="hSel"></span>
+      <button class="btn ghost" id="hReset" disabled>Reset terpilih</button>
+      <button class="btn danger" id="hHapus" disabled>Hapus terpilih</button>
+    </div>
+    <div class="tw"><table id="tHasil"></table></div>
+  </main>
+
+  <!-- SOAL -->
+  <main class="page" id="p-soal" hidden>
+    <div class="bar">
+      <select id="sMapel" aria-label="Filter mapel"></select>
+      <select id="sKelas" aria-label="Filter kelas">
+        <option value="">Semua kelas</option>
+        <option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option>
+      </select>
+      <select id="sTipe" aria-label="Filter tipe">
+        <option value="">Semua tipe</option><option value="PG">Pilihan ganda</option><option value="URAIAN">Uraian</option>
+      </select>
+      <input id="sCari" class="grow" type="text" placeholder="Cari teks soal" aria-label="Cari soal">
+      <button class="btn ghost" id="sMuat">Muat ulang</button>
+      <button class="btn" id="sTambah">Tambah soal</button>
+    </div>
+    <div class="muted" id="sInfo" style="margin-bottom:8px"></div>
+    <div class="tw"><table id="tSoal"></table></div>
+  </main>
+
+  <!-- MAPEL -->
+  <main class="page" id="p-mapel" hidden>
+    <div class="bar">
+      <span class="muted">Mapel yang berstatus TUTUP tidak muncul di halaman siswa.</span>
+      <span class="sp"></span>
+      <button class="btn" id="mTambah">Tambah mapel</button>
+    </div>
+    <div class="tw"><table id="tMapel"></table></div>
+  </main>
+
+  <!-- PENGATURAN -->
+  <main class="page" id="p-cfg" hidden>
+    <form class="sec" id="fCfg">
+      <h2>Pengaturan umum</h2>
+      <label for="cJudul">Judul ujian <span class="hint">(nama mapel ditambahkan otomatis di layar siswa)</span></label>
+      <input id="cJudul" type="text">
+      <div class="two">
+        <div><label for="cMaks">Maksimal pelanggaran</label><input id="cMaks" type="number" min="1" max="50"></div>
+        <div><label for="cBobot">Bobot pilihan ganda (%)</label><input id="cBobot" type="number" min="0" max="100"></div>
+        <div><label for="cDur">Durasi default (menit)</label><input id="cDur" type="number" min="1"></div>
+        <div><label for="cKode">Kode akses default</label><input id="cKode" type="text"></div>
+        <div><label for="cAcak">Acak soal (default)</label><select id="cAcak"><option>YA</option><option>TIDAK</option></select></div>
+        <div><label for="cTampil">Tampilkan nilai ke siswa</label><select id="cTampil"><option>YA</option><option>TIDAK</option></select></div>
+      </div>
+      <p class="muted">Durasi, kode, dan acak soal bisa diatur sendiri per mapel di tab Mapel. Isian di sini dipakai jika kolom mapel kosong.</p>
+      <div id="cfgMsg" class="msg err" hidden></div>
+      <div class="row"><button class="btn" type="submit">Simpan pengaturan</button></div>
+    </form>
+    <form class="sec" id="fPw">
+      <h2>Ganti password admin</h2>
+      <label for="pwLama">Password lama</label><input id="pwLama" type="password" autocomplete="current-password">
+      <label for="pwBaru">Password baru <span class="hint">(minimal 6 karakter)</span></label><input id="pwBaru" type="password" autocomplete="new-password">
+      <div id="pwMsg" class="msg err" hidden></div>
+      <div class="row"><button class="btn" type="submit">Ganti password</button></div>
+    </form>
+  </main>
+</section>
+
+<div id="modal" class="ov" hidden></div>
+<div id="toast" hidden></div>
+
+<script>
+/* ================= UTIL ================= */
+const $ = s => document.querySelector(s);
+const esc = t => String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+let TOKEN = '', HASIL = [], SOAL = [], MAPEL = [], SEL = new Set(), SORT = { k: 'mulaiMs', d: -1 }, autoId = null, soalLoaded = false;
+
+function store(k, v) { try { v == null ? sessionStorage.removeItem(k) : sessionStorage.setItem(k, v); } catch (e) {} }
+function fetchStore(k) { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } }
+
+function toast(msg, bad) {
+  const t = $('#toast'); t.textContent = msg; t.className = bad ? 'bad' : ''; t.hidden = false;
+  clearTimeout(toast.id); toast.id = setTimeout(() => t.hidden = true, bad ? 5000 : 2800);
+}
+
+function call(action, p) {
+  return new Promise((res, rej) => {
+    google.script.run
+      .withSuccessHandler(r => {
+        if (r && r.auth) { keluar(); rej(new Error(r.msg)); return; }
+        if (!r || !r.ok) { rej(new Error((r && r.msg) || 'Gagal.')); return; }
+        res(r);
+      })
+      .withFailureHandler(e => rej(new Error(e && e.message ? e.message : String(e))))
+      .adminApi(TOKEN, action, p || {});
+  });
+}
+
+function modal(html, wide) {
+  const m = $('#modal');
+  m.innerHTML = '<div class="box' + (wide ? ' wide' : '') + '" role="dialog" aria-modal="true">' + html + '</div>';
+  m.hidden = false;
+  m.onclick = e => { if (e.target === m) tutup(); };
+}
+function tutup() { $('#modal').hidden = true; $('#modal').innerHTML = ''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#modal').hidden) tutup(); });
+
+function konfirm(judul, isi, label, danger) {
+  return new Promise(res => {
+    modal('<div class="hd"><h2>' + esc(judul) + '</h2></div><p style="white-space:pre-wrap">' + esc(isi) + '</p>' +
+      '<div class="row end"><button class="btn ghost" id="kNo">Batal</button><button class="btn' + (danger ? ' danger' : '') + '" id="kYes">' + esc(label || 'Ya') + '</button></div>');
+    $('#kNo').onclick = () => { tutup(); res(false); };
+    $('#kYes').onclick = () => { tutup(); res(true); };
+    $('#kYes').focus();
+  });
+}
+
+function opsi(sel, items, semua, nilaiAwal) {
+  const keep = nilaiAwal != null ? nilaiAwal : sel.value;
+  sel.innerHTML = '<option value="">' + esc(semua) + '</option>' + items.map(v => '<option value="' + esc(v) + '">' + esc(v) + '</option>').join('');
+  if (items.indexOf(keep) >= 0) sel.value = keep;
+}
+
+/* ================= LOGIN ================= */
+$('#fLogin').addEventListener('submit', ev => {
+  ev.preventDefault();
+  const b = $('#btnLogin'); b.disabled = true; b.textContent = 'Memeriksa…'; $('#loginErr').hidden = true;
+  google.script.run
+    .withSuccessHandler(r => {
+      b.disabled = false; b.textContent = 'Masuk';
+      if (!r.ok) { $('#loginErr').textContent = r.msg; $('#loginErr').hidden = false; return; }
+      TOKEN = r.token; store('adm_token', TOKEN); $('#pw').value = '';
+      masuk(r.passwordDefault);
+    })
+    .withFailureHandler(e => { b.disabled = false; b.textContent = 'Masuk'; $('#loginErr').textContent = 'Gagal terhubung: ' + e.message; $('#loginErr').hidden = false; })
+    .adminLogin($('#pw').value);
+});
+
+function masuk(pwDefault) {
+  $('#login').hidden = true; $('#app').hidden = false;
+  $('#pwWarn').hidden = !pwDefault;
+  pindah('hasil');
+}
+
+function keluar() {
+  const t = TOKEN; TOKEN = ''; store('adm_token', null);
+  clearInterval(autoId); $('#hAuto').checked = false; tutup();
+  $('#app').hidden = true; $('#login').hidden = false;
+  if (t) google.script.run.adminLogout(t);
+}
+$('#btnOut').onclick = keluar;
+
+/* ================= TAB ================= */
+document.querySelectorAll('.tab').forEach(b => b.onclick = () => pindah(b.dataset.tab));
+function pindah(n) {
+  document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === n));
+  ['hasil', 'soal', 'mapel', 'cfg'].forEach(x => $('#p-' + x).hidden = x !== n);
+  if (n === 'hasil') muatHasil();
+  if (n === 'soal') muatSoal();
+  if (n === 'mapel') muatMapel();
+  if (n === 'cfg') muatCfg();
+}
+
+/* ================= HASIL ================= */
+const sudahUraian = r => r.uraian && r.status !== 'Berlangsung' && r.status !== 'Direset';
+const butuhNilai = r => sudahUraian(r) && r.nilaiUraian == null;
+function badge(s) {
+  const c = s === 'Berlangsung' ? 'b-run' : s === 'Direset' ? 'b-off' : s.indexOf('Dihentikan') === 0 ? 'b-stop' : 'b-ok';
+  return '<span class="badge ' + c + '">' + esc(s) + '</span>';
+}
+const fmtN = v => v == null ? '–' : (Math.round(v * 100) / 100).toString().replace('.', ',');
+
+async function muatHasil(diam) {
+  try {
+    const r = await call('hasil');
+    HASIL = r.rows;
+    const sids = new Set(HASIL.map(x => x.sid));
+    SEL = new Set([...SEL].filter(s => sids.has(s)));
+    opsi($('#hMapel'), [...new Set(HASIL.map(x => x.mapel).filter(Boolean))].sort(), 'Semua mapel');
+    opsi($('#hKelas'), [...new Set(HASIL.map(x => x.kelas).filter(Boolean))].sort(), 'Semua kelas');
+    renderHasil();
+  } catch (e) { if (!diam) toast(e.message, true); }
+}
+
+function hasilTersaring() {
+  const m = $('#hMapel').value, k = $('#hKelas').value, s = $('#hStatus').value, q = $('#hCari').value.trim().toLowerCase();
+  let rows = HASIL.filter(r => (!m || r.mapel === m) && (!k || r.kelas === k) &&
+    (!s || (s === '__wait' ? butuhNilai(r) : r.status.indexOf(s) === 0)) &&
+    (!q || r.nama.toLowerCase().indexOf(q) >= 0 || r.nis.toLowerCase().indexOf(q) >= 0));
+  const { k: key, d } = SORT;
+  rows.sort((a, b) => {
+    const x = a[key], y = b[key];
+    if (x == null && y == null) return 0;
+    if (x == null) return 1; if (y == null) return -1;
+    return (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'id', { numeric: true })) * d;
+  });
+  return rows;
+}
+
+function renderHasil() {
+  const rows = hasilTersaring();
+  const aktif = HASIL.filter(r => r.status !== 'Direset');
+  const cnt = f => aktif.filter(f).length;
+  $('#stats').innerHTML = [
+    [aktif.length, 'Total peserta'],
+    [cnt(r => r.status === 'Berlangsung'), 'Sedang mengerjakan'],
+    [cnt(r => r.status.indexOf('Selesai') === 0), 'Selesai'],
+    [cnt(r => r.status.indexOf('Dihentikan') === 0), 'Dihentikan'],
+    [cnt(butuhNilai), 'Menunggu nilai uraian']
+  ].map(x => '<div class="stat"><b>' + x[0] + '</b><span>' + x[1] + '</span></div>').join('');
+
+  const th = (k, t, c) => '<th class="s ' + (c || '') + '" data-k="' + k + '">' + t + (SORT.k === k ? (SORT.d > 0 ? ' ▲' : ' ▼') : '') + '</th>';
+  let h = '<thead><tr><th class="ck"><input type="checkbox" id="hAll" aria-label="Pilih semua"></th>' +
+    th('nama', 'Nama') + th('kelas', 'Kelas') + th('nis', 'NIS') + th('mapel', 'Mapel') + th('status', 'Status') +
+    th('viol', 'Pelanggaran', 'num') + th('nilaiPG', 'Nilai PG', 'num') + th('nilaiUraian', 'Uraian', 'num') + th('nilai', 'Nilai akhir', 'num') + th('mulaiMs', 'Mulai') +
+    '</tr></thead><tbody>';
+  if (!rows.length) h += '<tr><td colspan="11" class="empty">' + (HASIL.length ? 'Tidak ada data yang cocok dengan filter.' : 'Belum ada siswa yang mengikuti ujian.') + '</td></tr>';
+  rows.forEach(r => {
+    const ur = !r.uraian ? '–' : butuhNilai(r) ? '<span class="badge b-wait">Belum dinilai</span>' : fmtN(r.nilaiUraian);
+    h += '<tr class="click" data-sid="' + esc(r.sid) + '"><td class="ck"><input type="checkbox" class="rc" ' + (SEL.has(r.sid) ? 'checked' : '') + ' aria-label="Pilih ' + esc(r.nama) + '"></td>' +
+      '<td>' + esc(r.nama) + '</td><td>' + esc(r.kelas) + '</td><td>' + esc(r.nis) + '</td><td>' + esc(r.mapel || '–') + '</td><td>' + badge(r.status) + '</td>' +
+      '<td class="num">' + r.viol + '</td><td class="num">' + fmtN(r.nilaiPG) + '</td><td class="num">' + ur + '</td><td class="num"><b>' + fmtN(r.nilai) + '</b></td><td>' + esc(r.mulai) + '</td></tr>';
+  });
+  $('#tHasil').innerHTML = h + '</tbody>';
+  $('#tHasil').querySelectorAll('th.s').forEach(t => t.onclick = () => { SORT = { k: t.dataset.k, d: SORT.k === t.dataset.k ? -SORT.d : 1 }; renderHasil(); });
+  $('#tHasil').querySelectorAll('tr.click').forEach(tr => tr.onclick = e => {
+    if (e.target.classList.contains('rc')) {
+      e.target.checked ? SEL.add(tr.dataset.sid) : SEL.delete(tr.dataset.sid); updSel(); return;
+    }
+    bukaDetail(tr.dataset.sid);
+  });
+  const all = $('#hAll'); if (all) all.onchange = () => { rows.forEach(r => all.checked ? SEL.add(r.sid) : SEL.delete(r.sid)); renderHasil(); };
+  updSel();
+}
+function updSel() {
+  const n = SEL.size;
+  $('#hSel').textContent = n ? n + ' dipilih' : '';
+  $('#hReset').disabled = $('#hHapus').disabled = !n;
+}
+['hMapel', 'hKelas', 'hStatus'].forEach(id => $('#' + id).addEventListener('change', renderHasil));
+$('#hCari').addEventListener('input', renderHasil);
+$('#hMuat').onclick = () => muatHasil().then(() => toast('Data dimuat ulang.'));
+$('#hAuto').onchange = e => { clearInterval(autoId); if (e.target.checked) autoId = setInterval(() => { if ($('#modal').hidden && !$('#p-hasil').hidden) muatHasil(true); }, 30000); };
+
+$('#hReset').onclick = async () => {
+  if (!await konfirm('Reset ' + SEL.size + ' siswa?', 'Siswa bisa mengerjakan ulang dari awal. Barisnya tetap tersimpan dengan status "Direset".', 'Reset')) return;
+  try { const r = await call('hasilReset', { sids: [...SEL] }); SEL.clear(); toast(r.n + ' siswa direset.'); muatHasil(); } catch (e) { toast(e.message, true); }
+};
+$('#hHapus').onclick = async () => {
+  if (!await konfirm('Hapus ' + SEL.size + ' baris hasil?', 'Baris dihapus permanen dari sheet Hasil dan tidak bisa dikembalikan. Untuk membiarkan siswa mengulang, gunakan Reset.', 'Hapus permanen', true)) return;
+  try { const r = await call('hasilHapus', { sids: [...SEL] }); SEL.clear(); toast(r.n + ' baris dihapus.'); muatHasil(); } catch (e) { toast(e.message, true); }
+};
+
+$('#hCsv').onclick = () => {
+  const rows = hasilTersaring();
+  const kol = ['Mulai', 'Nama', 'Kelas', 'NIS', 'Mapel', 'Status', 'Pelanggaran', 'Benar PG', 'Jumlah PG', 'Nilai PG', 'Nilai Uraian', 'Nilai Akhir', 'Selesai'];
+  const c = v => { v = v == null ? '' : String(v); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+  const lines = [kol.join(',')].concat(rows.map(r => [r.mulai, r.nama, r.kelas, r.nis, r.mapel, r.status, r.viol, r.benar, r.totalPG, r.nilaiPG, r.nilaiUraian, r.nilai, r.selesai].map(c).join(',')));
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'hasil-ujian.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Ekspor dimulai (' + rows.length + ' baris). Jika tidak terunduh, buka sheet Hasil di Google Sheet.');
+};
+
+async function pastikanSoal() {
+  if (soalLoaded) return;
+  try { SOAL = (await call('soal')).rows; soalLoaded = true; } catch (e) {}
+}
+
+async function bukaDetail(sid) {
+  const r = HASIL.find(x => x.sid === sid); if (!r) return;
+  await pastikanSoal();
+  let blok = '';
+  if (r.uraian) {
+    blok = '<h3 style="margin-top:16px">Jawaban uraian</h3>' + r.uraian.split(/\n\n(?=\[Soal \d+\])/).map(b => {
+      const m = b.match(/^\[Soal (\d+)\] ([\s\S]*?)\nJawaban: ([\s\S]*)$/);
+      if (!m) return '<div class="ans"><div class="at">' + esc(b) + '</div></div>';
+      const s = SOAL.find(x => String(x.id) === m[1]);
+      return '<div class="ans"><div class="qt">' + esc(m[2]) + '</div><div class="at">' + esc(m[3]) + '</div>' +
+        (s && s.key ? '<div class="rub">Rubrik: ' + esc(s.key) + '</div>' : '') + '</div>';
+    }).join('');
+    if (sudahUraian(r)) {
+      blok += '<div class="nilaiRow"><div><label for="nU" style="margin-top:0">Nilai uraian (0–100)</label><input id="nU" type="number" min="0" max="100" step="0.01" value="' + (r.nilaiUraian == null ? '' : r.nilaiUraian) + '"></div>' +
+        '<button class="btn" id="nSimpan">Simpan nilai</button><span class="muted" id="nHasil"></span></div>';
+    }
+  }
+  modal('<div class="hd"><div><h2>' + esc(r.nama) + '</h2><div class="muted">' + esc(r.mapel || '') + '</div></div><button class="x" id="xTutup" aria-label="Tutup">×</button></div>' +
+    '<dl class="kv"><dt>Kelas</dt><dd>' + esc(r.kelas) + '</dd><dt>NIS</dt><dd>' + esc(r.nis) + '</dd><dt>Status</dt><dd>' + badge(r.status) + '</dd>' +
+    '<dt>Mulai</dt><dd>' + esc(r.mulai) + '</dd><dt>Selesai</dt><dd>' + esc(r.selesai || '–') + '</dd>' +
+    '<dt>Nilai PG</dt><dd>' + fmtN(r.nilaiPG) + (r.benar != null ? ' (benar ' + r.benar + ' dari ' + r.totalPG + ')' : '') + '</dd>' +
+    '<dt>Nilai akhir</dt><dd id="dAkhir"><b>' + fmtN(r.nilai) + '</b></dd><dt>Pelanggaran</dt><dd>' + r.viol + '</dd></dl>' +
+    '<h3>Catatan pelanggaran</h3><pre class="log">' + esc(r.log || 'Tidak ada pelanggaran tercatat.') + '</pre>' + blok +
+    '<div class="row end"><button class="btn ghost" id="dReset"' + (r.status === 'Direset' ? ' disabled' : '') + '>Reset siswa</button><button class="btn danger" id="dHapus">Hapus baris</button></div>', true);
+  $('#xTutup').onclick = tutup;
+  if ($('#nSimpan')) $('#nSimpan').onclick = async () => {
+    try {
+      const x = await call('hasilSetNilai', { sid: r.sid, nilai: $('#nU').value });
+      r.nilaiUraian = x.nilaiUraian; r.nilai = x.nilai;
+      $('#nHasil').textContent = 'Tersimpan.'; $('#dAkhir').innerHTML = '<b>' + fmtN(x.nilai) + '</b>'; renderHasil();
+    } catch (e) { toast(e.message, true); }
+  };
+  $('#dReset').onclick = async () => {
+    if (!await konfirm('Reset ' + r.nama + '?', 'Siswa bisa mengerjakan ulang dari awal.', 'Reset')) return;
+    try { await call('hasilReset', { sids: [r.sid] }); toast('Siswa direset.'); muatHasil(); } catch (e) { toast(e.message, true); }
+  };
+  $('#dHapus').onclick = async () => {
+    if (!await konfirm('Hapus baris ' + r.nama + '?', 'Baris dihapus permanen dan tidak bisa dikembalikan.', 'Hapus permanen', true)) return;
+    try { await call('hasilHapus', { sids: [r.sid] }); toast('Baris dihapus.'); SEL.delete(r.sid); muatHasil(); } catch (e) { toast(e.message, true); }
+  };
+}
+
+/* ================= SOAL ================= */
+async function muatSoal() {
+  try {
+    const [a, b] = await Promise.all([call('soal'), call('mapel')]);
+    SOAL = a.rows; soalLoaded = true; MAPEL = b.rows;
+    opsi($('#sMapel'), MAPEL.map(m => m.nama), 'Semua mapel');
+    $('#sMapel').insertAdjacentHTML('beforeend', '<option value="__kosong">(Berlaku untuk semua mapel)</option>');
+    renderSoal();
+  } catch (e) { toast(e.message, true); }
+}
+function soalTersaring() {
+  const m = $('#sMapel').value, k = $('#sKelas').value, t = $('#sTipe').value, q = $('#sCari').value.trim().toLowerCase();
+  return SOAL.filter(s => (!m || (m === '__kosong' ? !s.mapel : s.mapel === m)) && (!k || s.kelas === k) && (!t || s.tipe === t) && (!q || s.q.toLowerCase().indexOf(q) >= 0));
+}
+function renderSoal() {
+  const rows = soalTersaring();
+  $('#sInfo').textContent = rows.length + ' dari ' + SOAL.length + ' soal';
+  let h = '<thead><tr><th class="num">ID</th><th>Pertanyaan</th><th>Tipe</th><th>Kelas</th><th>Mapel</th><th>Kunci</th><th></th></tr></thead><tbody>';
+  if (!rows.length) h += '<tr><td colspan="7" class="empty">' + (SOAL.length ? 'Tidak ada soal yang cocok dengan filter.' : 'Belum ada soal. Klik "Tambah soal".') + '</td></tr>';
+  rows.forEach(s => {
+    h += '<tr><td class="num">' + s.id + '</td><td class="q">' + esc(s.q.length > 140 ? s.q.slice(0, 140) + '…' : s.q) + (s.img ? ' <span class="badge b-off">gambar</span>' : '') + '</td>' +
+      '<td>' + (s.tipe === 'URAIAN' ? 'Uraian' : 'PG') + '</td><td>' + esc(s.kelas || 'Semua') + '</td><td>' + esc(s.mapel || 'Semua') + '</td>' +
+      '<td>' + (s.tipe === 'PG' ? esc(s.key) : '–') + '</td>' +
+      '<td><div class="acts"><button class="btn ghost sm" data-a="e" data-r="' + s.row + '">Ubah</button><button class="btn ghost sm" data-a="d" data-r="' + s.row + '">Duplikat</button><button class="btn danger sm" data-a="x" data-r="' + s.row + '">Hapus</button></div></td></tr>';
+  });
+  $('#tSoal').innerHTML = h + '</tbody>';
+  $('#tSoal').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const s = SOAL.find(x => x.row === Number(b.dataset.r));
+    if (b.dataset.a === 'e') formSoal(s); else if (b.dataset.a === 'd') formSoal(Object.assign({}, s, { row: 0 })); else hapusSoal(s);
+  });
+}
+['sMapel', 'sKelas', 'sTipe'].forEach(id => $('#' + id).addEventListener('change', renderSoal));
+$('#sCari').addEventListener('input', renderSoal);
+$('#sMuat').onclick = () => muatSoal().then(() => toast('Soal dimuat ulang.'));
+$('#sTambah').onclick = () => formSoal(null);
+
+function formSoal(s) {
+  const baru = !s || !s.row;
+  s = s || { q: '', o: ['', '', '', ''], key: '', img: '', imgUrl: '', tipe: 'PG', kelas: '', mapel: $('#sMapel').value && $('#sMapel').value !== '__kosong' ? $('#sMapel').value : '' };
+  const mp = MAPEL.map(m => '<option value="' + esc(m.nama) + '"' + (s.mapel === m.nama ? ' selected' : '') + '>' + esc(m.nama) + '</option>').join('');
+  modal('<div class="hd"><h2>' + (baru ? 'Tambah soal' : 'Ubah soal ' + s.id) + '</h2><button class="x" id="xTutup" aria-label="Tutup">×</button></div>' +
+    '<div class="two"><div><label for="fMapel">Mapel</label><select id="fMapel"><option value="">Semua mapel</option>' + mp + '</select></div>' +
+    '<div><label for="fKelas">Kelas</label><select id="fKelas"><option value="">Semua kelas</option>' + [1, 2, 3, 4, 5, 6].map(k => '<option' + (String(k) === s.kelas ? ' selected' : '') + '>' + k + '</option>').join('') + '</select></div></div>' +
+    '<label>Tipe soal</label><div class="chips"><label><input type="radio" name="fTipe" value="PG"' + (s.tipe === 'PG' ? ' checked' : '') + '> Pilihan ganda</label><label><input type="radio" name="fTipe" value="URAIAN"' + (s.tipe === 'URAIAN' ? ' checked' : '') + '> Uraian</label></div>' +
+    '<label for="fQ">Pertanyaan</label><textarea id="fQ">' + esc(s.q) + '</textarea>' +
+    '<div id="boxPG"><div class="two">' + ['A', 'B', 'C', 'D'].map((L, i) => '<div><label for="fO' + i + '">Pilihan ' + L + '</label><input id="fO' + i + '" type="text" value="' + esc(s.o[i]) + '"></div>').join('') + '</div>' +
+    '<label for="fKey">Kunci jawaban</label><select id="fKey" style="max-width:140px"><option value="">Pilih</option>' + ['A', 'B', 'C', 'D'].map(L => '<option' + (s.key === L ? ' selected' : '') + '>' + L + '</option>').join('') + '</select></div>' +
+    '<div id="boxU" hidden><label for="fRub">Rubrik / jawaban contoh <span class="hint">(hanya dilihat guru, tidak dikirim ke siswa)</span></label><textarea id="fRub">' + esc(s.tipe === 'URAIAN' ? s.key : '') + '</textarea></div>' +
+    '<label for="fImg">Gambar <span class="hint">(opsional: link Google Drive atau gambar/namafile.svg)</span></label><input id="fImg" type="text" value="' + esc(s.img) + '">' +
+    '<img class="prev" id="fPrev" alt="Pratinjau gambar" hidden>' +
+    '<div id="fErr" class="msg err" hidden></div>' +
+    '<div class="row end"><button class="btn ghost" id="fBatal">Batal</button><button class="btn" id="fSimpan">Simpan soal</button></div>', true);
+
+  const tipe = () => document.querySelector('input[name=fTipe]:checked').value;
+  const sync = () => { $('#boxPG').hidden = tipe() === 'URAIAN'; $('#boxU').hidden = tipe() !== 'URAIAN'; };
+  document.querySelectorAll('input[name=fTipe]').forEach(r => r.onchange = sync); sync();
+  const prev = () => {
+    const v = $('#fImg').value.trim(), im = $('#fPrev');
+    const m = v.match(/\/d\/([\w-]+)/) || v.match(/[?&]id=([\w-]+)/);
+    const u = m ? 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w400' : (/^https?:\/\//.test(v) ? v : '');
+    if (u) { im.src = u; im.hidden = false; im.onerror = () => im.hidden = true; } else im.hidden = true;
+  };
+  $('#fImg').oninput = prev; prev();
+  $('#xTutup').onclick = $('#fBatal').onclick = tutup;
+  $('#fSimpan').onclick = async () => {
+    const b = $('#fSimpan'); b.disabled = true; $('#fErr').hidden = true;
+    const u = tipe() === 'URAIAN';
+    try {
+      await call('soalSave', {
+        row: s.row || 0, q: $('#fQ').value, tipe: tipe(), mapel: $('#fMapel').value, kelas: $('#fKelas').value, img: $('#fImg').value,
+        o: u ? [] : [0, 1, 2, 3].map(i => $('#fO' + i).value), key: u ? $('#fRub').value : $('#fKey').value
+      });
+      tutup(); toast('Soal disimpan.'); muatSoal();
+    } catch (e) { $('#fErr').textContent = e.message; $('#fErr').hidden = false; b.disabled = false; }
+  };
+}
+
+async function hapusSoal(s) {
+  if (!await konfirm('Hapus soal ' + s.id + '?', s.q.slice(0, 160) + '\n\nNomor soal lain akan disusun ulang. Soal tidak bisa dihapus saat ada siswa yang sedang ujian.', 'Hapus soal', true)) return;
+  try { await call('soalHapus', { row: s.row }); toast('Soal dihapus.'); muatSoal(); } catch (e) { toast(e.message, true); }
+}
+
+/* ================= MAPEL ================= */
+async function muatMapel() {
+  try { MAPEL = (await call('mapel')).rows; renderMapel(); } catch (e) { toast(e.message, true); }
+}
+function renderMapel() {
+  let h = '<thead><tr><th>Mapel</th><th>Kelompok</th><th>Kelas</th><th class="num">Durasi</th><th>Kode</th><th>Acak soal</th><th class="num">Soal</th><th>Status</th><th></th></tr></thead><tbody>';
+  if (!MAPEL.length) h += '<tr><td colspan="9" class="empty">Belum ada mapel. Klik "Tambah mapel".</td></tr>';
+  MAPEL.forEach(m => {
+    h += '<tr><td><b>' + esc(m.nama) + '</b></td><td>' + esc(m.kelompok || 'Umum') + '</td><td>' + esc(m.kelas.length ? m.kelas.join(', ') : 'Semua') + '</td>' +
+      '<td class="num">' + (m.durasi ? m.durasi + ' mnt' : 'Default') + '</td><td>' + esc(m.kode || 'Default') + '</td><td>' + esc(m.acak || 'Default') + '</td><td class="num">' + m.jumlahSoal + '</td>' +
+      '<td><span class="badge ' + (m.status === 'BUKA' ? 'b-ok' : 'b-off') + '">' + m.status + '</span></td>' +
+      '<td><div class="acts"><button class="btn ghost sm" data-a="t" data-r="' + m.row + '">' + (m.status === 'BUKA' ? 'Tutup' : 'Buka') + '</button><button class="btn ghost sm" data-a="e" data-r="' + m.row + '">Ubah</button><button class="btn danger sm" data-a="x" data-r="' + m.row + '">Hapus</button></div></td></tr>';
+  });
+  $('#tMapel').innerHTML = h + '</tbody>';
+  $('#tMapel').querySelectorAll('button').forEach(b => b.onclick = () => {
+    const m = MAPEL.find(x => x.row === Number(b.dataset.r));
+    if (b.dataset.a === 'e') formMapel(m); else if (b.dataset.a === 't') simpanMapel(Object.assign({}, m, { status: m.status === 'BUKA' ? 'TUTUP' : 'BUKA' }), true); else hapusMapel(m);
+  });
+}
+$('#mTambah').onclick = () => formMapel(null);
+
+async function simpanMapel(m, cepat) {
+  try { await call('mapelSave', m); if (!cepat) tutup(); toast('Mapel disimpan.'); muatMapel(); return true; }
+  catch (e) { if (cepat) toast(e.message, true); return e.message; }
+}
+
+function formMapel(m) {
+  const baru = !m;
+  m = m || { nama: '', kelompok: '', kelas: [], durasi: 0, kode: '', acak: '', status: 'BUKA' };
+  modal('<div class="hd"><h2>' + (baru ? 'Tambah mapel' : 'Ubah mapel') + '</h2><button class="x" id="xTutup" aria-label="Tutup">×</button></div>' +
+    '<label for="mNama">Nama mapel</label><input id="mNama" type="text" value="' + esc(m.nama) + '">' +
+    (!baru ? '<div class="hint">Jika nama diubah, soal dan hasil lama ikut diperbarui.</div>' : '') +
+    '<label for="mKel">Kelompok <span class="hint">(pengelompokan di dropdown siswa, contoh: Umum, Agama, Bahasa)</span></label><input id="mKel" type="text" value="' + esc(m.kelompok) + '">' +
+    '<label>Berlaku untuk kelas <span class="hint">(tidak ada yang dicentang = semua kelas)</span></label><div class="chips">' +
+    [1, 2, 3, 4, 5, 6].map(k => '<label><input type="checkbox" class="mk" value="' + k + '"' + (m.kelas.indexOf(String(k)) >= 0 ? ' checked' : '') + '> ' + k + '</label>').join('') + '</div>' +
+    '<div class="two"><div><label for="mDur">Durasi (menit)</label><input id="mDur" type="number" min="0" value="' + (m.durasi || '') + '" placeholder="Default"></div>' +
+    '<div><label for="mKode">Kode akses</label><input id="mKode" type="text" value="' + esc(m.kode) + '" placeholder="Default"></div>' +
+    '<div><label for="mAcak">Acak soal</label><select id="mAcak"><option value="">Default</option><option' + (m.acak === 'YA' ? ' selected' : '') + '>YA</option><option' + (m.acak === 'TIDAK' ? ' selected' : '') + '>TIDAK</option></select></div>' +
+    '<div><label for="mStat">Status</label><select id="mStat"><option' + (m.status === 'BUKA' ? ' selected' : '') + '>BUKA</option><option' + (m.status === 'TUTUP' ? ' selected' : '') + '>TUTUP</option></select></div></div>' +
+    '<div id="mErr" class="msg err" hidden></div><div class="row end"><button class="btn ghost" id="mBatal">Batal</button><button class="btn" id="mSimpan">Simpan mapel</button></div>');
+  $('#xTutup').onclick = $('#mBatal').onclick = tutup;
+  $('#mSimpan').onclick = async () => {
+    const b = $('#mSimpan'); b.disabled = true; $('#mErr').hidden = true;
+    const r = await simpanMapel({
+      row: m.row || 0, nama: $('#mNama').value, kelompok: $('#mKel').value, durasi: $('#mDur').value, kode: $('#mKode').value, acak: $('#mAcak').value, status: $('#mStat').value,
+      kelas: [...document.querySelectorAll('.mk:checked')].map(x => x.value)
+    });
+    if (r !== true) { $('#mErr').textContent = r; $('#mErr').hidden = false; b.disabled = false; }
+  };
+}
+
+async function hapusMapel(m) {
+  if (!await konfirm('Hapus mapel ' + m.nama + '?', 'Mapel yang masih punya soal tidak bisa dihapus. Untuk menyembunyikannya dari siswa, cukup tutup mapelnya.', 'Hapus mapel', true)) return;
+  try { await call('mapelHapus', { row: m.row }); toast('Mapel dihapus.'); muatMapel(); } catch (e) { toast(e.message, true); }
+}
+
+/* ================= PENGATURAN ================= */
+async function muatCfg() {
+  try {
+    const c = (await call('cfg')).cfg;
+    $('#cJudul').value = c.Judul; $('#cMaks').value = c.MaksPelanggaran; $('#cBobot').value = c.BobotPilihanGanda;
+    $('#cDur').value = c.DurasiMenit; $('#cKode').value = c.KodeAkses;
+    $('#cAcak').value = String(c.AcakSoal).toUpperCase() === 'TIDAK' ? 'TIDAK' : 'YA';
+    $('#cTampil').value = String(c.TampilkanNilai).toUpperCase() === 'TIDAK' ? 'TIDAK' : 'YA';
+  } catch (e) { toast(e.message, true); }
+}
+$('#fCfg').addEventListener('submit', async ev => {
+  ev.preventDefault(); $('#cfgMsg').hidden = true;
+  try {
+    await call('cfgSave', { Judul: $('#cJudul').value, MaksPelanggaran: $('#cMaks').value, BobotPilihanGanda: $('#cBobot').value, DurasiMenit: $('#cDur').value,
+      KodeAkses: $('#cKode').value, AcakSoal: $('#cAcak').value, TampilkanNilai: $('#cTampil').value });
+    toast('Pengaturan disimpan.');
+  } catch (e) { $('#cfgMsg').textContent = e.message; $('#cfgMsg').hidden = false; }
+});
+$('#fPw').addEventListener('submit', async ev => {
+  ev.preventDefault(); $('#pwMsg').hidden = true;
+  try {
+    await call('password', { lama: $('#pwLama').value, baru: $('#pwBaru').value });
+    $('#pwLama').value = $('#pwBaru').value = ''; $('#pwWarn').hidden = true; toast('Password diganti.');
+  } catch (e) { $('#pwMsg').textContent = e.message; $('#pwMsg').hidden = false; }
+});
+
+/* ================= MULAI ================= */
+(function init() {
+  const t = fetchStore('adm_token');
+  if (t) {
+    TOKEN = t;
+    google.script.run
+      .withSuccessHandler(r => { if (r && r.ok) masuk(false); else { TOKEN = ''; $('#login').hidden = false; } })
+      .withFailureHandler(() => { TOKEN = ''; $('#login').hidden = false; })
+      .adminApi(t, 'cfg', {});
+  } else $('#login').hidden = false;
+})();
+</script>
+</body>
+</html>
